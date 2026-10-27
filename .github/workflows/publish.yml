@@ -1,0 +1,100 @@
+name: Publish
+
+# Every v* tag publishes the CLI (bun-lock-submission) to npm. The tag must match
+# the version in packages/cli/package.json and packages/action/package.json, and
+# point to a commit on main. The same tag is the action's release: publish it to
+# GitHub Marketplace from the release page, and move the major tag (v1) to it.
+#
+# A release goes out through npm trusted publishing with provenance, or not at
+# all: npm trusts this workflow's OIDC token (the trusted publisher on npmjs.com
+# names this repository, publish.yml and the npm environment), and no npm token
+# is stored anywhere.
+on:
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/bun-lock-submission
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the release
+        env:
+          PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
+        run: |
+          for package in cli action; do
+            version=$(jq -r .version "packages/$package/package.json")
+            if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+              echo "::error::Tag $GITHUB_REF_NAME does not match $version in packages/$package/package.json."
+              exit 1
+            fi
+          done
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points to a commit that is not on main."
+            exit 1
+          fi
+          # npm refuses provenance from a private repository.
+          if [ "$PRIVATE_REPOSITORY" != false ]; then
+            echo "::error::Provenance needs a public repository; $GITHUB_REPOSITORY is not public."
+            exit 1
+          fi
+
+      # No dependency cache: this job can publish, so its packages come from the
+      # registry, not from a cache another job saved.
+      - name: Install Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+
+      # Trusted publishing needs the npm CLI 11.5.1 or later, which Node.js 24 ships.
+      - name: Install Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Test
+        run: bun run type-check && bun run test
+
+      - name: Publish
+        working-directory: packages/cli
+        run: |
+          # A prerelease such as 1.0.0-beta.1 goes out under `next`, never as `latest`.
+          case "$(jq -r .version package.json)" in
+            *-*) tag=next ;;
+            *) tag=latest ;;
+          esac
+          # prepack builds dist/ and copies README.md and LICENSE from the root.
+          npm publish --provenance --access public --tag "$tag"
+
+      - name: Check npm recorded OIDC and provenance
+        run: |
+          version=$(jq -r .version packages/cli/package.json)
+          meta=$(curl -fsS --retry 6 --retry-delay 10 --retry-all-errors \
+            "https://registry.npmjs.org/bun-lock-submission/$version")
+          if [ "$(jq -r '._npmUser.trustedPublisher.id // empty' <<<"$meta")" != github ]; then
+            echo "::error::bun-lock-submission $version was not published through trusted publishing."
+            exit 1
+          fi
+          if [ -z "$(jq -r '.dist.attestations.provenance.predicateType // empty' <<<"$meta")" ]; then
+            echo "::error::bun-lock-submission $version was published without provenance."
+            exit 1
+          fi
