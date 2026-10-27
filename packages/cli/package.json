@@ -20,7 +20,7 @@
   ],
   "type": "module",
   "bin": {
-    "bun-lock-submission": "./dist/cli.mjs"
+    "bun-lock-submission": "dist/cli.mjs"
   },
   "files": [
     "dist"

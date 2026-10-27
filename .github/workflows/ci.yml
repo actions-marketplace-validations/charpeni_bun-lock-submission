@@ -26,9 +26,16 @@ jobs:
           - name: Tests
             run: bun run test
           # npx runs the CLI on Node.js, while the tests run on Bun.
+          # npm publish silently drops package.json fields it would correct, such as a
+          # bin path starting with ./, so the manifest must already be what npm wants.
           - name: CLI on Node.js
             run: |
               bun run --filter bun-lock-submission build
+              (cd packages/cli && npm pkg fix)
+              if ! git diff --exit-code -- packages/cli/package.json; then
+                echo "::error::npm would rewrite packages/cli/package.json when publishing. Run \`npm pkg fix\` in packages/cli and commit the result."
+                exit 1
+              fi
               node packages/cli/dist/cli.mjs snapshot bun.lock > "$RUNNER_TEMP/snapshot.json"
               jq -e '.manifests["bun.lock"].resolved | length > 0' "$RUNNER_TEMP/snapshot.json"
           # GitHub runs the committed bundle, so it must match the source.

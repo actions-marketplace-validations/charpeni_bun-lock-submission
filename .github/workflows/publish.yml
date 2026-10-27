@@ -8,7 +8,8 @@ name: Publish CLI
 # A release goes out through npm trusted publishing with provenance, or not at
 # all: npm trusts this workflow's OIDC token (the trusted publisher on npmjs.com
 # names this repository, publish.yml and the npm environment), and no npm token
-# is stored anywhere.
+# is stored anywhere. Trusted publishing stages the release: it becomes
+# installable once a maintainer approves it, with 2FA, on npmjs.com.
 on:
   push:
     tags: ['cli-v[0-9]+.[0-9]+.[0-9]+*']
@@ -72,6 +73,10 @@ jobs:
       - name: Test
         run: bun run type-check && bun run test
 
+      # npm checks bin paths before running prepack, so the bundle must exist first.
+      - name: Build
+        run: bun run --filter bun-lock-submission build
+
       - name: Publish
         working-directory: packages/cli
         run: |
@@ -82,17 +87,3 @@ jobs:
           esac
           # prepack builds dist/ and copies README.md and LICENSE from the root.
           npm publish --provenance --access public --tag "$tag"
-
-      - name: Check npm recorded OIDC and provenance
-        run: |
-          version=$(jq -r .version packages/cli/package.json)
-          meta=$(curl -fsS --retry 6 --retry-delay 10 --retry-all-errors \
-            "https://registry.npmjs.org/bun-lock-submission/$version")
-          if [ "$(jq -r '._npmUser.trustedPublisher.id // empty' <<<"$meta")" != github ]; then
-            echo "::error::bun-lock-submission $version was not published through trusted publishing."
-            exit 1
-          fi
-          if [ -z "$(jq -r '.dist.attestations.provenance.predicateType // empty' <<<"$meta")" ]; then
-            echo "::error::bun-lock-submission $version was published without provenance."
-            exit 1
-          fi
