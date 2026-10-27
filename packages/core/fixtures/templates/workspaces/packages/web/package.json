@@ -1,0 +1,12 @@
+{
+  "name": "@acme/web",
+  "private": true,
+  "dependencies": {
+    "@acme/shared": "workspace:*",
+    "chalk": "4.1.2",
+    "debug": "catalog:"
+  },
+  "peerDependencies": {
+    "has-flag": "4.0.0"
+  }
+}

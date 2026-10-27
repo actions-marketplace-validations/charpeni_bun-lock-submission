@@ -1,0 +1,10 @@
+{
+  "name": "local-lib",
+  "version": "1.0.0",
+  "dependencies": {
+    "has-flag": "4.0.0"
+  },
+  "devDependencies": {
+    "is-number": "7.0.0"
+  }
+}

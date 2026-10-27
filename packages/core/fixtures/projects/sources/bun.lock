@@ -1,0 +1,27 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "sources",
+      "dependencies": {
+        "debug": "github:debug-js/debug#4.3.4",
+        "local-lib": "file:./local-lib",
+        "ms-tarball": "https://registry.npmjs.org/ms/-/ms-2.1.2.tgz",
+      },
+    },
+  },
+  "packages": {
+    "debug": ["debug@github:debug-js/debug#6add244", { "dependencies": { "ms": "2.1.2" }, "peerDependencies": { "supports-color": "*" }, "optionalPeers": ["supports-color"] }, "debug-js-debug-6add244", "sha512-0EbA7Q5/TMnHYSJqkVEVk3+2Yna5l/Li+6v276sRgXUTjIutGMDKYT2ki9BEFJY8FaPkmzQL6f66qpEeayXy/w=="],
+
+    "has-flag": ["has-flag@4.0.0", "", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
+
+    "is-number": ["is-number@7.0.0", "", {}, "sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng=="],
+
+    "local-lib": ["local-lib@file:local-lib", { "dependencies": { "has-flag": "4.0.0" }, "devDependencies": { "is-number": "7.0.0" } }],
+
+    "ms": ["ms@2.1.2", "", {}, "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="],
+
+    "ms-tarball": ["ms@https://registry.npmjs.org/ms/-/ms-2.1.2.tgz", {}, "sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w=="],
+  }
+}

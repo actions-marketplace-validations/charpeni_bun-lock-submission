@@ -1,0 +1,13 @@
+{
+  "name": "scoped-overrides",
+  "private": true,
+  "dependencies": {
+    "chalk": "4.1.2",
+    "debug": "4.3.7"
+  },
+  "overrides": {
+    "chalk": {
+      "supports-color": "7.1.0"
+    }
+  }
+}

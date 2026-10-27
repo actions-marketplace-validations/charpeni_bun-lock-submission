@@ -1,0 +1,9 @@
+{
+  "name": "api",
+  "private": true,
+  "dependencies": {
+    "@acme/shared": "workspace:*",
+    "debug": "catalog:legacy",
+    "typescript": "5.6.3"
+  }
+}
