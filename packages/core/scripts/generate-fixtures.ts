@@ -2,7 +2,8 @@
  * Regenerates the project fixtures under `fixtures/projects`.
  *
  * Each fixture names a template project and a Bun version. This script copies the
- * template to a temporary directory, installs it with that Bun version, keeps the
+ * template to a temporary directory, restores its `package.fixture.json` files to
+ * `package.json`, installs it with that Bun version, keeps the
  * `bun.lock` it wrote, and records what was actually installed in `installed.json`.
  * It reads `node_modules` the way Node resolves modules, and never reads `bun.lock`,
  * so the tests can check the lockfile parser against Bun's own install.
@@ -23,6 +24,7 @@ import {
   readdirSync,
   readFileSync,
   realpathSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -192,6 +194,22 @@ function inspect(root: string): Omit<InstalledProject, 'bun' | 'lockfileVersion'
   };
 }
 
+/**
+ * Templates name their manifests `package.fixture.json`, because GitHub's dependency graph
+ * reads every `package.json` in the repository and would raise alerts for the old versions
+ * the fixtures pin on purpose. The installed copy gets its real names back.
+ */
+function restoreManifests(directory: string): void {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      restoreManifests(path);
+    } else if (entry.name === 'package.fixture.json') {
+      renameSync(path, join(directory, 'package.json'));
+    }
+  }
+}
+
 const selected = process.argv.slice(2);
 for (const fixture of readdirSync(join(FIXTURES, 'projects')).toSorted()) {
   if (selected.length > 0 && !selected.includes(fixture)) {
@@ -207,6 +225,7 @@ for (const fixture of readdirSync(join(FIXTURES, 'projects')).toSorted()) {
   const directory = realpathSync(mkdtempSync(join(tmpdir(), `fixture-${fixture}-`)));
   try {
     cpSync(join(FIXTURES, 'templates', template), directory, { recursive: true });
+    restoreManifests(directory);
     const lockfile = join(output, 'bun.lock');
     const frozen = existsSync(lockfile);
     if (frozen) {

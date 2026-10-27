@@ -2,9 +2,7 @@
   "name": "workspaces-root",
   "private": true,
   "workspaces": {
-    "packages": [
-      "packages/*"
-    ],
+    "packages": ["packages/*"],
     "catalog": {
       "debug": "4.3.7"
     },
