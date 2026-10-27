@@ -1,0 +1,39 @@
+{
+  "name": "bun-lock-submission",
+  "version": "1.0.0",
+  "description": "Submit bun.lock dependencies to GitHub's dependency graph, so Dependabot alerts cover transitive dependencies.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/charpeni/bun-lock-submission.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/charpeni/bun-lock-submission#cli",
+  "bugs": "https://github.com/charpeni/bun-lock-submission/issues",
+  "keywords": [
+    "bun",
+    "bun.lock",
+    "dependabot",
+    "dependency-graph",
+    "dependency-submission",
+    "security"
+  ],
+  "type": "module",
+  "bin": {
+    "bun-lock-submission": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build src/bin.ts --target node --format esm --outfile dist/cli.mjs",
+    "prepack": "bun run build && cp ../../README.md ../../LICENSE .",
+    "type-check": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@bun-lock-submission/core": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
