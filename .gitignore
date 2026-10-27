@@ -1,0 +1,23 @@
+# build output (the action's bundle is committed: GitHub runs it from the repository)
+dist/
+!/packages/action/dist/
+
+# generated at pack time
+/packages/cli/README.md
+/packages/cli/LICENSE
+
+# dependencies
+node_modules/
+
+# logs
+*.log
+
+# editor and OS files
+.DS_Store
+.idea/
+.serena/
+.vscode/
+
+# working documents stay local
+PLAN.md
+*.plan.md

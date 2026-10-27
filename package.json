@@ -1,0 +1,29 @@
+{
+  "name": "bun-lock-submission-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "check": "bun run format:check && bun run lint && bun run type-check && bun run test",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "bun test",
+    "type-check": "bun run --filter '*' type-check"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.4",
+    "@types/node": "26.6.5",
+    "oxfmt": "0.75.0",
+    "oxlint": "1.90.0",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "bun@1.4.4"
+}
