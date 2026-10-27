@@ -1,0 +1,33 @@
+name: Dependency submission
+
+# Submits this repository's own bun.lock with the action from this commit, so its
+# Dependabot alerts cover transitive dependencies. The fixture lockfiles under
+# packages/core/fixtures are test data, not dependencies, so only the root
+# lockfile is listed.
+on:
+  push:
+    branches: [main]
+    paths: [bun.lock]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: dependency-submission
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Submit bun.lock
+        uses: ./
+        with:
+          lockfiles: bun.lock

@@ -1,0 +1,13 @@
+{
+  "name": "@bun-lock-submission/action",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/index.ts --target node --format esm --outfile dist/index.mjs",
+    "type-check": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@bun-lock-submission/core": "workspace:*"
+  }
+}
