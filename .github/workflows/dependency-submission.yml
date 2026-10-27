@@ -4,10 +4,17 @@ name: Dependency submission
 # Dependabot alerts cover transitive dependencies. The fixture lockfiles under
 # packages/core/fixtures are test data, not dependencies, so only the root
 # lockfile is listed.
+#
+# Besides bun.lock, a change to this file or to the action itself changes what
+# gets submitted, so both trigger a new submission too.
 on:
   push:
     branches: [main]
-    paths: [bun.lock]
+    paths:
+      - bun.lock
+      - .github/workflows/dependency-submission.yml
+      - action.yml
+      - packages/action/dist/**
   workflow_dispatch:
 
 permissions: {}

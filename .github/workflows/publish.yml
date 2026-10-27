@@ -1,9 +1,9 @@
-name: Publish
+name: Publish CLI
 
-# Every v* tag publishes the CLI (bun-lock-submission) to npm. The tag must match
-# the version in packages/cli/package.json and packages/action/package.json, and
-# point to a commit on main. The same tag is the action's release: publish it to
-# GitHub Marketplace from the release page, and move the major tag (v1) to it.
+# Every cli-vX.Y.Z tag, such as cli-v1.2.0, publishes the CLI (bun-lock-submission)
+# to npm. The tag must match the version in packages/cli/package.json and point to
+# a commit on main. The action is released separately, with vX.Y.Z tags and a vX
+# major tag, which this workflow ignores; see Releasing in the README.
 #
 # A release goes out through npm trusted publishing with provenance, or not at
 # all: npm trusts this workflow's OIDC token (the trusted publisher on npmjs.com
@@ -11,7 +11,7 @@ name: Publish
 # is stored anywhere.
 on:
   push:
-    tags: ['v*']
+    tags: ['cli-v[0-9]+.[0-9]+.[0-9]+*']
 
 concurrency:
   group: publish-npm
@@ -37,13 +37,11 @@ jobs:
         env:
           PRIVATE_REPOSITORY: ${{ github.event.repository.private }}
         run: |
-          for package in cli action; do
-            version=$(jq -r .version "packages/$package/package.json")
-            if [ "$GITHUB_REF_NAME" != "v$version" ]; then
-              echo "::error::Tag $GITHUB_REF_NAME does not match $version in packages/$package/package.json."
-              exit 1
-            fi
-          done
+          version=$(jq -r .version packages/cli/package.json)
+          if [ "$GITHUB_REF_NAME" != "cli-v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match $version in packages/cli/package.json."
+            exit 1
+          fi
           if ! git merge-base --is-ancestor HEAD origin/main; then
             echo "::error::Tag $GITHUB_REF_NAME points to a commit that is not on main."
             exit 1

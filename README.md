@@ -9,12 +9,17 @@ It comes as a GitHub Action and as a CLI.
 ## GitHub Action
 
 ```yaml
+# .github/workflows/dependency-submission.yml
 name: Dependency submission
 
 on:
   push:
     branches: [main]
-    paths: ['**/bun.lock']
+    paths:
+      - '**/bun.lock'
+      # Editing this workflow, such as its inputs or the action version, changes
+      # what gets submitted too.
+      - .github/workflows/dependency-submission.yml
   workflow_dispatch:
 
 permissions: {}
@@ -30,6 +35,8 @@ jobs:
 ```
 
 The action submits every `bun.lock` in the repository, outside `node_modules`, in a single snapshot. Dependabot alerts follow the default branch, so run it on pushes to that branch. Pin the action to a commit SHA if your repository requires it.
+
+A submission stays in place until the next one replaces it, so commits that leave the lockfiles alone keep their alerts. The first push to a new repository does not run a workflow filtered by `paths`, so run it once from the Actions tab.
 
 | Input                | Default               | Description                                                                                                                                                                            |
 | -------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -97,6 +104,10 @@ bun run build   # bundles the CLI and the action
 GitHub runs the action from `packages/action/dist`, so commit the rebuilt bundle with any change to `packages/core` or `packages/action`.
 
 The tests check the lockfile reader against real projects in `packages/core/fixtures/projects`: single packages and workspaces, written by Bun 1.1 to 1.4 in every lockfile version. Each fixture keeps the `bun.lock` that Bun wrote and an `installed.json` that records what Bun actually installed, read from `node_modules`. To add a setup, add a template and a fixture, then run `bun packages/core/scripts/generate-fixtures.ts`, which needs network access.
+
+### Releasing
+
+The CLI and the action are released separately. To release the CLI, bump `version` in `packages/cli/package.json` and push a `cli-vX.Y.Z` tag on `main`: the Publish CLI workflow publishes it to npm through trusted publishing. To release the action, bump `version` in `packages/action/package.json`, which is the detector version GitHub records, rebuild the bundle, and push a `vX.Y.Z` tag on `main`. Then publish a GitHub release for that tag to GitHub Marketplace, and move the `vX` tag to it.
 
 ## License
 
